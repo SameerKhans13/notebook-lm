@@ -62,7 +62,7 @@ class VectorStore {
         await client.query(
           `CREATE INDEX IF NOT EXISTS idx_documents_embedding_ivfflat ON documents USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)`
         );
-      } catch (indexError) {
+      } catch (indexError: any) {
         console.warn("Index creation skipped (this is normal for small datasets):", indexError.message);
       }
 

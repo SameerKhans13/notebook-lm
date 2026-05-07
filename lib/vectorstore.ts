@@ -216,17 +216,74 @@ class VectorStore {
   async deleteDocument(documentId: string): Promise<void> {
     const client = await this.pool.connect();
     try {
+      // Start transaction
+      await client.query('BEGIN');
+      
       const result = await client.query(
         `DELETE FROM documents WHERE document_id = $1`,
         [documentId]
       );
 
+      await client.query(
+        `DELETE FROM document_metadata WHERE id = $1`,
+        [documentId]
+      );
+
+      await client.query('COMMIT');
+      
       console.log(
-        `Deleted ${result.rowCount} chunks for document ${documentId}`
+        `Deleted ${result.rowCount} chunks and metadata for document ${documentId}`
       );
     } catch (error) {
+      await client.query('ROLLBACK');
       console.warn("Failed to delete document:", error);
       throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Save document metadata to database
+   */
+  async saveMetadata(id: string, fileName: string, fileType: string, chunkCount: number): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query(
+        `INSERT INTO document_metadata (id, file_name, file_type, chunk_count)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (id) DO UPDATE SET
+           file_name = EXCLUDED.file_name,
+           file_type = EXCLUDED.file_type,
+           chunk_count = EXCLUDED.chunk_count,
+           uploaded_at = CURRENT_TIMESTAMP`,
+        [id, fileName, fileType, chunkCount]
+      );
+    } catch (error) {
+      console.error("Failed to save metadata:", error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Get all document metadata from database
+   */
+  async getAllMetadata(): Promise<any[]> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`SELECT * FROM document_metadata ORDER BY uploaded_at DESC`);
+      return result.rows.map(row => ({
+        id: row.id,
+        fileName: row.file_name,
+        fileType: row.file_type,
+        chunkCount: row.chunk_count,
+        uploadedAt: row.uploaded_at
+      }));
+    } catch (error) {
+      console.error("Failed to get metadata:", error);
+      return [];
     } finally {
       client.release();
     }

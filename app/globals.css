@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* White, Blue, and Black Professional Theme */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%; /* Professional Blue */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-image: 
+      radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 0% 100%, rgba(0, 0, 0, 0.02) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+}
+
+.sidebar-black {
+  background: #000000;
+  color: #ffffff;
+}
+
+.chat-bubble-blue {
+  background: hsl(var(--primary));
+  color: #ffffff;
+}
+
+.chat-bubble-white {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.prose {
+  @apply text-slate-800 leading-relaxed;
+}
+
+.prose strong {
+  @apply font-black text-slate-900;
+}
+
+.prose h1, .prose h2, .prose h3 {
+  @apply font-black text-slate-900 tracking-tight mt-6 mb-3;
+}
+
+.prose ul {
+  @apply list-disc list-inside space-y-2 mt-2;
+}
+
+.prose-synthesis {
+  @apply border-l-4 border-blue-500 pl-4 py-1 mb-6 bg-blue-50/30 rounded-r-xl;
+}

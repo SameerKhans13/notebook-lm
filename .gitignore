@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+build/
+.next/
+out/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Uploads and temp files
+public/uploads/
+data/documents.json
+
+# Optional npm cache
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Qdrant storage
+qdrant_storage/

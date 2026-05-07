@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: notebook_user
+      POSTGRES_PASSWORD: notebook_password
+      POSTGRES_DB: notebook_db
+    volumes:
+      - postgres_storage:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notebook_user -d notebook_db"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+  # Optional: Ollama for local embeddings
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_storage:/root/.ollama
+
+volumes:
+  postgres_storage:
+  # ollama_storage:

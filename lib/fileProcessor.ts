@@ -1,44 +1,40 @@
-import fs from "fs";
 import path from "path";
 import * as pdfParse from "pdf-parse";
 
 /**
- * Extract text from PDF file
+ * Extract text from PDF buffer
  */
-export async function extractTextFromPDF(filePath: string): Promise<string> {
-  const fileContent = fs.readFileSync(filePath);
-  const pdfData = await pdfParse(fileContent);
-  
-  // pdfData.text already contains the full text from all pages
+export async function extractTextFromPDF(buffer: Buffer): Promise<string> {
+  const pdfData = await pdfParse(buffer);
   return pdfData.text || "";
 }
 
 /**
- * Extract text from plain text file
+ * Extract text from text buffer
  */
-export async function extractTextFromFile(filePath: string): Promise<string> {
-  return fs.promises.readFile(filePath, "utf-8");
+export async function extractTextFromBuffer(buffer: Buffer): Promise<string> {
+  return buffer.toString("utf-8");
 }
 
 /**
- * Process uploaded file and extract text
+ * Process uploaded file from buffer and extract text
  */
 export async function processUploadedFile(
-  filePath: string
+  buffer: Buffer,
+  fileName: string
 ): Promise<{ text: string; fileName: string; fileType: string }> {
-  const fileName = path.basename(filePath);
-  const fileExtension = path.extname(filePath).toLowerCase();
+  const fileExtension = path.extname(fileName).toLowerCase();
 
   let text = "";
 
   if (fileExtension === ".pdf") {
-    text = await extractTextFromPDF(filePath);
+    text = await extractTextFromPDF(buffer);
   } else if (
     fileExtension === ".txt" ||
     fileExtension === ".md" ||
     fileExtension === ".mdx"
   ) {
-    text = await extractTextFromFile(filePath);
+    text = await extractTextFromBuffer(buffer);
   } else {
     throw new Error(
       `Unsupported file type: ${fileExtension}. Supported types: .pdf, .txt, .md`
@@ -62,10 +58,11 @@ export async function processUploadedFile(
  * Validate file before processing
  */
 export function validateFile(
-  filePath: string,
+  fileName: string,
+  bufferSize: number,
   maxSizeInMB: number = 50
 ): { valid: boolean; error?: string } {
-  const extension = path.extname(filePath).toLowerCase();
+  const extension = path.extname(fileName).toLowerCase();
   const supportedExtensions = [".pdf", ".txt", ".md", ".mdx"];
 
   if (!supportedExtensions.includes(extension)) {
@@ -76,20 +73,12 @@ export function validateFile(
   }
 
   // Check file size
-  try {
-    const stats = fs.statSync(filePath);
-    const fileSizeInMB = stats.size / (1024 * 1024);
+  const fileSizeInMB = bufferSize / (1024 * 1024);
 
-    if (fileSizeInMB > maxSizeInMB) {
-      return {
-        valid: false,
-        error: `File size ${fileSizeInMB.toFixed(2)}MB exceeds maximum ${maxSizeInMB}MB`,
-      };
-    }
-  } catch (error) {
+  if (fileSizeInMB > maxSizeInMB) {
     return {
       valid: false,
-      error: "Failed to read file",
+      error: `File size ${fileSizeInMB.toFixed(2)}MB exceeds maximum ${maxSizeInMB}MB`,
     };
   }
 

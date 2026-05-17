@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { processUploadedFile, validateFile } from "@/lib/fileProcessor";
 import { chunkDocument } from "@/lib/chunking";
@@ -18,29 +16,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create temp directory for uploads
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    // Save file temporarily
-    const tempFilePath = path.join(uploadDir, file.name);
+    // Convert file to buffer
     const buffer = await file.arrayBuffer();
-    fs.writeFileSync(tempFilePath, Buffer.from(buffer));
+    const fileBuffer = Buffer.from(buffer);
 
-    // Validate file
-    const validation = validateFile(tempFilePath);
+    // Validate file (using buffer size instead of file path)
+    const validation = validateFile(file.name, fileBuffer.length);
     if (!validation.valid) {
-      fs.unlinkSync(tempFilePath);
       return NextResponse.json(
         { error: validation.error },
         { status: 400 }
       );
     }
 
-    // Process file
-    const { text, fileName, fileType } = await processUploadedFile(tempFilePath);
+    // Process file from buffer (no disk writes)
+    const { text, fileName, fileType } = await processUploadedFile(
+      fileBuffer,
+      file.name
+    );
 
     // Chunk the document
     const chunks = await chunkDocument(text);
@@ -59,9 +52,6 @@ export async function POST(request: NextRequest) {
       fileType,
       chunks.length
     );
-
-    // Clean up temp file
-    fs.unlinkSync(tempFilePath);
 
     return NextResponse.json({
       success: true,

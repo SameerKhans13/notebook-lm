@@ -6,38 +6,6 @@ import { processUploadedFile, validateFile } from "@/lib/fileProcessor";
 import { chunkDocument } from "@/lib/chunking";
 import { VectorStore } from "@/lib/vectorstore";
 
-// Store metadata about uploaded documents in a simple JSON file
-const DOCUMENTS_DB_PATH = path.join(process.cwd(), "data", "documents.json");
-
-interface DocumentMetadata {
-  id: string;
-  fileName: string;
-  fileType: string;
-  uploadedAt: string;
-  textLength: number;
-  chunkCount: number;
-}
-
-function ensureDataDir() {
-  const dataDir = path.dirname(DOCUMENTS_DB_PATH);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
-
-function loadDocumentsDb(): Record<string, DocumentMetadata> {
-  ensureDataDir();
-  if (fs.existsSync(DOCUMENTS_DB_PATH)) {
-    return JSON.parse(fs.readFileSync(DOCUMENTS_DB_PATH, "utf-8"));
-  }
-  return {};
-}
-
-function saveDocumentsDb(db: Record<string, DocumentMetadata>) {
-  ensureDataDir();
-  fs.writeFileSync(DOCUMENTS_DB_PATH, JSON.stringify(db, null, 2));
-}
-
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -84,17 +52,13 @@ export async function POST(request: NextRequest) {
     const vectorStore = new VectorStore();
     await vectorStore.storeDocuments(chunks, documentId);
 
-    // Update documents metadata
-    const documentsDb = loadDocumentsDb();
-    documentsDb[documentId] = {
-      id: documentId,
+    // Save document metadata to database
+    await vectorStore.saveMetadata(
+      documentId,
       fileName,
       fileType,
-      uploadedAt: new Date().toISOString(),
-      textLength: text.length,
-      chunkCount: chunks.length,
-    };
-    saveDocumentsDb(documentsDb);
+      chunks.length
+    );
 
     // Clean up temp file
     fs.unlinkSync(tempFilePath);
@@ -117,9 +81,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const documentsDb = loadDocumentsDb();
-    const documents = Object.values(documentsDb);
-    
+    const vectorStore = new VectorStore();
+    const documents = await vectorStore.getAllMetadata();
+
     return NextResponse.json({
       success: true,
       documents,
@@ -145,14 +109,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Delete from vector store
+    // Delete from vector store (this also deletes metadata)
     const vectorStore = new VectorStore();
     await vectorStore.deleteDocument(documentId);
-
-    // Update documents metadata
-    const documentsDb = loadDocumentsDb();
-    delete documentsDb[documentId];
-    saveDocumentsDb(documentsDb);
 
     return NextResponse.json({
       success: true,

@@ -43,7 +43,25 @@ export async function POST(request: NextRequest) {
 
     // Store in vector database
     const vectorStore = new VectorStore();
-    await vectorStore.storeDocuments(chunks, documentId);
+    
+    try {
+      await vectorStore.storeDocuments(chunks, documentId);
+    } catch (dbError: any) {
+      console.error("Database error:", dbError);
+      
+      // Provide helpful error message for connection issues
+      if (dbError.code === 'ECONNREFUSED' || dbError.code === 'ETIMEDOUT' || dbError.message?.includes('ETIMEDOUT')) {
+        return NextResponse.json(
+          { 
+            error: "Database connection failed. Please ensure DATABASE_URL is configured correctly in your environment variables.",
+            details: dbError.message
+          },
+          { status: 503 }
+        );
+      }
+      
+      throw dbError;
+    }
 
     // Save document metadata to database
     await vectorStore.saveMetadata(

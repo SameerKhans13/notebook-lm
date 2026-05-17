@@ -21,12 +21,16 @@ class VectorStore {
       console.warn("⚠️  DATABASE_URL not set in environment variables");
     }
     
+    // Determine if SSL is needed (external databases)
+    const isLocalhost = databaseUrl.includes("localhost") || databaseUrl.includes("127.0.0.1");
+    const sslConfig = !isLocalhost ? { rejectUnauthorized: false } : undefined;
+    
     this.pool = new Pool({
       connectionString: databaseUrl,
       connectionTimeoutMillis: 10000, // 10 second timeout
       idleTimeoutMillis: 30000, // 30 seconds
       max: 5, // Maximum connections
-      ssl: databaseUrl.includes("cloudsql") ? { rejectUnauthorized: false } : undefined,
+      ssl: sslConfig,
     });
 
     // Handle pool errors

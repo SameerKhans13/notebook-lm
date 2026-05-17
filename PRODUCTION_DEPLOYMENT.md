@@ -14,8 +14,8 @@
 ### Required Variables
 
 ```env
-# Google Gemini API Key
-GOOGLE_API_KEY=AIzaSyCKxZvmueVuPjilcg42-_FMPuPa1kHcl7Y
+# Google Gemini API Key (set in Vercel dashboard)
+GOOGLE_API_KEY=your_google_gemini_api_key_here
 
 # PostgreSQL Cloud SQL Connection
 DATABASE_URL=postgresql://postgres:OfficialGradeBench-2025@34.93.143.147:5432/postgres
@@ -98,8 +98,8 @@ In Vercel Dashboard:
 2. Add these variables:
 
 ```
-GOOGLE_API_KEY = AIzaSyCKxZvmueVuPjilcg42-_FMPuPa1kHcl7Y
-DATABASE_URL = postgresql://postgres:OfficialGradeBench-2025@34.93.143.147:5432/postgres
+GOOGLE_API_KEY = your_google_gemini_api_key_here
+DATABASE_URL = postgresql://postgres:YOUR_PASSWORD@YOUR_CLOUD_SQL_IP:5432/postgres
 NEXT_PUBLIC_API_URL = https://your-project.vercel.app
 ```
 

@@ -126,8 +126,8 @@ Your app **will work in production** even if local connection fails, as long as:
 ### Required Vercel Environment Variables
 
 ```
-GOOGLE_API_KEY = AIzaSyCKxZvmueVuPjilcg42-_FMPuPa1kHcl7Y
-DATABASE_URL = postgresql://postgres:OfficialGradeBench-2025@34.93.143.147:5432/postgres
+GOOGLE_API_KEY = your_google_gemini_api_key_here
+DATABASE_URL = postgresql://postgres:YOUR_PASSWORD@YOUR_CLOUD_SQL_IP:5432/postgres
 NEXT_PUBLIC_API_URL = https://notebook-lm.vercel.app
 ```
 

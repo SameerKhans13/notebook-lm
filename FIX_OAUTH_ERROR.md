@@ -67,7 +67,7 @@ Your app doesn't need OAuth for production. Just set environment variables:
 
 ```
 Variable Name: GOOGLE_API_KEY
-Value: AIzaSyCKxZvmueVuPjilcg42-_FMPuPa1kHcl7Y
+Value: your_google_gemini_api_key_here
 Environment: Production, Preview, Development
 
 Variable Name: DATABASE_URL

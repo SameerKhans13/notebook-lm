@@ -1,17 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const getClient = () => {
-  // Debug: Log all environment variables that contain API or KEY
-  const allEnvKeys = Object.keys(process.env).filter(
-    (key) => key.toUpperCase().includes("API") || key.toUpperCase().includes("KEY")
-  );
-  console.log("DEBUG: Available env vars:", allEnvKeys);
-
-  const apiKey = process.env.GOOGLE_API_KEY;
+  // Check for both uppercase and lowercase versions of the API key
+  const apiKey = process.env.GOOGLE_API_KEY || process.env.google_api_key;
   
   if (!apiKey) {
     console.error("ERROR: GOOGLE_API_KEY is missing from process.env");
-    console.error("Full process.env:", JSON.stringify(process.env, null, 2));
+    const availableKeys = Object.keys(process.env).filter(
+      (key) => key.toUpperCase().includes("GOOGLE") || key.toUpperCase().includes("API")
+    );
+    console.error("Available env vars:", availableKeys);
     throw new Error(
       "GOOGLE_API_KEY is not defined in environment variables. Make sure it's set in Vercel Environment Variables."
     );

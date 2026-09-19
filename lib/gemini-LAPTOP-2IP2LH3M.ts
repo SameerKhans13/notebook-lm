@@ -1,13 +1,27 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const getClient = () => {
-  const apiKey = process.env.GOOGLE_API_KEY;
+  // Check for both uppercase and lowercase versions of the API key
+  const apiKey = process.env.GOOGLE_API_KEY || process.env.google_api_key;
+  
   if (!apiKey) {
-    console.error("DEBUG: GOOGLE_API_KEY is missing from process.env");
-    throw new Error("GOOGLE_API_KEY is not defined in environment variables");
+    console.error("ERROR: GOOGLE_API_KEY is missing from process.env");
+    const availableKeys = Object.keys(process.env).filter(
+      (key) => key.toUpperCase().includes("GOOGLE") || key.toUpperCase().includes("API")
+    );
+    console.error("Available env vars:", availableKeys);
+    throw new Error(
+      "GOOGLE_API_KEY is not defined in environment variables. Make sure it's set in Vercel Environment Variables."
+    );
   }
 
-  // Log first/last chars for debugging 403 errors
+  if (apiKey.length < 20) {
+    throw new Error(
+      `GOOGLE_API_KEY appears invalid (too short: ${apiKey.length} chars). Check Vercel Environment Variables.`
+    );
+  }
+
+  // Log first/last chars for debugging
   const maskedKey = `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`;
   console.log(`DEBUG: Using API Key [${maskedKey}], length: ${apiKey.length}`);
 

@@ -17,8 +17,25 @@ class VectorStore {
     databaseUrl: string = process.env.DATABASE_URL ||
       "postgresql://notebook_user:notebook_password@localhost:5432/notebook_db"
   ) {
+    if (!process.env.DATABASE_URL) {
+      console.warn("⚠️  DATABASE_URL not set in environment variables");
+    }
+    
+    // Determine if SSL is needed (external databases)
+    const isLocalhost = databaseUrl.includes("localhost") || databaseUrl.includes("127.0.0.1");
+    const sslConfig = !isLocalhost ? { rejectUnauthorized: false } : undefined;
+    
     this.pool = new Pool({
       connectionString: databaseUrl,
+      connectionTimeoutMillis: 10000, // 10 second timeout
+      idleTimeoutMillis: 30000, // 30 seconds
+      max: 5, // Maximum connections
+      ssl: sslConfig,
+    });
+
+    // Handle pool errors
+    this.pool.on("error", (err) => {
+      console.error("Unexpected connection pool error:", err);
     });
   }
 
@@ -308,6 +325,24 @@ class VectorStore {
       return {
         collectionName: "documents",
         pointCount: 0,
+      };
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Check database connectivity
+   */
+  async healthCheck(): Promise<{ connected: boolean; error?: string }> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("SELECT 1");
+      return { connected: true };
+    } catch (error: any) {
+      return {
+        connected: false,
+        error: error.message,
       };
     } finally {
       client.release();

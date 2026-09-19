@@ -154,7 +154,7 @@ Version: PostgreSQL 18...
 
 ```
 Name: GOOGLE_API_KEY
-Value: AIzaSyCKxZvmueVuPjilcg42-_FMPuPa1kHcl7Y
+Value: your_google_gemini_api_key_here
 Environments: Production, Preview, Development
 
 Name: DATABASE_URL
